@@ -1,0 +1,244 @@
+     1  0000: 02 01 00      LJMP START
+     2  0100:               ORG 100H
+     3                  
+     4  0100:           START:
+     5  0100: 12 81 0C      LCALL LCD_CLR
+     6  0103: C3            CLR C
+     7  0104: 78 00         MOV R0, #0
+     8  0106: 79 00         MOV R1, #0
+     9                  
+    10  0108: 12 81 1C      LCALL WAIT_KEY
+    11  010B: F8            MOV R0, A
+    12  010C: 12 81 04      LCALL WRITE_HEX
+    13                  
+    14  010F:           LOOP:
+    15  010F: 12 81 1C      LCALL WAIT_KEY
+    16  0112: B4 0A 5A      CJNE A, #10, ODEJMOWANIE 
+    17  0115: E4            CLR A
+    18                  
+    19  0116:           DOD:
+    20  0116: 74 2B         MOV A, #'+'     ;dodawanie
+    21  0118: 12 81 02      LCALL WRITE_DATA
+    22                  
+    23  011B: 12 81 1C      LCALL WAIT_KEY
+    24  011E: F9            MOV R1, A
+    25  011F: 12 81 04      LCALL WRITE_HEX
+    26                  
+    27  0122: 74 3D         MOV A, #'='
+    28  0124: 12 81 02      LCALL WRITE_DATA
+    29                  
+    30  0127: E9            MOV A, R1
+    31  0128: 28            ADD A, R0
+    32  0129: F8            MOV R0, A
+    33                  
+    34  012A:           LOOP2:
+    35  012A: 12 01 3E      LCALL BCD
+    36  012D: E4            CLR A
+    37                  
+    38  012E:           LOOP3:
+    39  012E: 12 81 1C      LCALL WAIT_KEY
+    40  0131: B4 0A 2B      CJNE A, #10, KLIK_B
+    41                      ; plus
+    42                  
+    43  0134: 12 81 0C      LCALL LCD_CLR
+    44  0137: E8            MOV A, R0
+    45  0138: 12 01 3E      LCALL BCD
+    46                  
+    47  013B: 80 D9         SJMP DOD
+    48  013D: 00            NOP
+    49                  
+    50  013E:           BCD:
+    51  013E: 75 F0 0A      MOV B, #10
+    52  0141: 84            DIV AB
+    53  0142: C4            SWAP A
+    54  0143: 25 F0         ADD A, B
+    55  0145: 12 81 04      LCALL WRITE_HEX
+    56  0148: 22            RET
+    57                  
+    58  0149:           BCD_DZIELENIE:
+    59  0149: A9 F0         MOV R1, B
+    60  014B: 12 01 3E      LCALL BCD
+    61  014E: 74 52         MOV A, #'R'
+    62  0150: 12 81 02      LCALL WRITE_DATA
+    63  0153: E9            MOV A, R1
+    64  0154: 12 81 04      LCALL WRITE_HEX
+    65  0157: 22            RET
+    66                  
+    67  0158:           DODAWANIE:
+    68  0158: B4 0A B4      CJNE A, #10, LOOP
+    69  015B: 02 01 16      LJMP DOD
+    70  015E: 22            RET
+    71                  
+    72  015F:           KLIK_B:
+    73  015F: B4 0B 4C      CJNE A, #11, KLIK_C
+    74                      ; minus
+    75                  
+    76  0162: 12 81 0C      LCALL LCD_CLR
+    77  0165: E8            MOV A, R0
+    78  0166: 12 01 3E      LCALL BCD
+    79                      
+    80  0169: 74 0B         MOV A, #11
+    81  016B: 02 01 6F      LJMP ODEJMOWANIE
+    82                  
+    83  016E: 22            RET
+    84                  
+    85  016F:           ODEJMOWANIE:
+    86  016F: B4 0B 66      CJNE A, #11, MNOZENIE
+    87  0172: E4            CLR A
+    88                      ; odejmowanie
+    89                  
+    90  0173: 74 2D         MOV A, #'-'
+    91  0175: 12 81 02      LCALL WRITE_DATA
+    92                  
+    93  0178: 12 81 1C      LCALL WAIT_KEY
+    94  017B: F9            MOV R1, A
+    95  017C: 12 81 04      LCALL WRITE_HEX
+    96                  
+    97  017F: 74 3D         MOV A, #'='
+    98  0181: 12 81 02      LCALL WRITE_DATA
+    99                  
+   100  0184: 89 F0         MOV B, R1
+   101  0186: E8            MOV A, R0
+   102  0187: C3            CLR C
+   103  0188: 95 F0         SUBB A, B
+   104  018A: 40 6A         JC UJEMNA
+   105                  
+   106  018C: F8            MOV R0, A
+   107                  
+   108  018D: 02 01 2A      LJMP LOOP2
+   109                  
+   110  0190: 22            RET
+   111                  
+   112                  
+   113  0191:           DZIELENIE:
+   114  0191: B4 0D C4      CJNE A, #13, DODAWANIE
+   115  0194: E4            CLR A
+   116                  
+   117                      ; dzielenie
+   118                  
+   119  0195: 74 2F         MOV A, #'/'
+   120  0197: 12 81 02      LCALL WRITE_DATA
+   121                  
+   122  019A: 12 81 1C      LCALL WAIT_KEY
+   123  019D: F9            MOV R1, A
+   124  019E: 12 81 04      LCALL WRITE_HEX
+   125                  
+   126  01A1: 74 3D         MOV A, #'='
+   127  01A3: 12 81 02      LCALL WRITE_DATA
+   128                  
+   129  01A6: 89 F0         MOV B, R1
+   130  01A8: E8            MOV A, R0
+   131                  
+   132  01A9: E5 F0         MOV A, B
+   133  01AB: 02 01 C8      LJMP DZIELENIE_ZERO
+   134                  
+   135  01AE:           KLIK_C:
+   136  01AE: B4 0C 5E      CJNE A, #12, KLIK_D
+   137                  
+   138                      ; mnozenie
+   139  01B1: 12 81 0C      LCALL LCD_CLR
+   140  01B4: E8            MOV A, R0
+   141  01B5: 12 01 3E      LCALL BCD
+   142                      
+   143  01B8: 74 0C         MOV A, #12
+   144  01BA: 02 01 D8      LJMP MNOZENIE
+   145  01BD: 22            RET
+   146                  
+   147  01BE:           DZIEL_DALEJ:
+   148  01BE: E8            MOV A, R0
+   149  01BF: 84            DIV AB
+   150  01C0: F8            MOV R0, A
+   151  01C1: 12 01 49      LCALL BCD_DZIELENIE
+   152                  
+   153  01C4: 02 01 2E      LJMP LOOP3
+   154                  
+   155                      ;dzielenie tu zrobic
+   156  01C7: 22            RET
+   157                  
+   158  01C8:           DZIELENIE_ZERO:
+   159  01C8: B4 00 F3      CJNE A, #0, DZIEL_DALEJ
+   160  01CB: 12 02 23      LCALL BLAD
+   161                  
+   162  01CE: 12 81 0C      LCALL LCD_CLR
+   163  01D1: E8            MOV A, R0
+   164  01D2: 12 01 3E      LCALL BCD
+   165  01D5: 02 01 91      LJMP DZIELENIE
+   166                  
+   167  01D8:           MNOZENIE:
+   168  01D8: B4 0C B6      CJNE A, #12, DZIELENIE
+   169  01DB: E4            CLR A
+   170                  
+   171                      ; mnozenie
+   172                  
+   173  01DC: 74 2A         MOV A, #'*'
+   174  01DE: 12 81 02      LCALL WRITE_DATA
+   175                  
+   176  01E1: 12 81 1C      LCALL WAIT_KEY
+   177  01E4: F9            MOV R1, A
+   178  01E5: 12 81 04      LCALL WRITE_HEX
+   179                  
+   180  01E8: 74 3D         MOV A, #'='
+   181  01EA: 12 81 02      LCALL WRITE_DATA
+   182                  
+   183  01ED: 88 F0         MOV B, R0
+   184  01EF: E9            MOV A, R1
+   185  01F0: A4            MUL AB
+   186  01F1: F8            MOV R0, A
+   187                  
+   188  01F2: 02 01 2A      LJMP LOOP2
+   189  01F5: 22            RET
+   190                  
+   191  01F6:           UJEMNA:
+   192  01F6: F4            CPL A
+   193  01F7: 04            INC A
+   194                  
+   195  01F8: F9            MOV R1, A
+   196                  
+   197  01F9: 74 2D         MOV A, #'-'
+   198  01FB: 12 81 02      LCALL WRITE_DATA
+   199                  
+   200  01FE: E9            MOV A, R1
+   201  01FF: C3            CLR C
+   202  0200: 12 01 3E      LCALL BCD
+   203                  
+   204  0203: 74 14         MOV A, #20
+   205  0205: 12 81 12      LCALL DELAY_100MS
+   206                  
+   207  0208: 12 02 23      LCALL BLAD
+   208                      
+   209  020B: 02 01 00      LJMP START
+   210  020E: 22            RET
+   211                  
+   212  020F:           KLIK_D:
+   213  020F: B4 0D 0D      CJNE A, #13, KLIK_A
+   214                      ; podziel
+   215                  
+   216  0212: 12 81 0C      LCALL LCD_CLR
+   217  0215: E8            MOV A, R0
+   218  0216: 12 01 3E      LCALL BCD ; tutaj lcall do A tylko
+   219                      
+   220  0219: 74 0D         MOV A, #13
+   221  021B: 02 01 91      LJMP DZIELENIE
+   222                  
+   223  021E: 22            RET
+   224                  
+   225  021F:           KLIK_A:
+   226  021F: 02 01 16      LJMP DOD
+   227  0222: 22            RET
+   228                  
+   229  0223:           BLAD:
+   230  0223: 12 81 0C      LCALL LCD_CLR
+   231  0226: 74 45         MOV A, #'E'
+   232  0228: 12 81 02      LCALL WRITE_DATA
+   233  022B: 74 52         MOV A, #'R'
+   234  022D: 12 81 02      LCALL WRITE_DATA
+   235  0230: 74 52         MOV A, #'R'
+   236  0232: 12 81 02      LCALL WRITE_DATA
+   237  0235: 74 4F         MOV A, #'O'
+   238  0237: 12 81 02      LCALL WRITE_DATA
+   239  023A: 74 52         MOV A, #'R'
+   240  023C: 12 81 02      LCALL WRITE_DATA
+   241                  
+   242  023F: 74 14         MOV A, #20
+   243  0241: 12 81 12      LCALL DELAY_100MS
+   244                  
